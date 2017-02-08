@@ -59,7 +59,11 @@ module SamlIdp
                 attr_statement.Attribute Name: attrs[:name] || friendly_name,
                   NameFormat: attrs[:name_format] || Saml::XML::Namespaces::Formats::Attr::URI,
                   FriendlyName: friendly_name.to_s do |attr|
-                    values = get_values_for friendly_name, attrs[:getter]
+                    if attrs[:value]
+                      values = [attrs[:value]]
+                    else
+                      values = get_values_for friendly_name, attrs[:getter]
+                    end
                     values.each do |val|
                       attr.AttributeValue val.to_s
                     end

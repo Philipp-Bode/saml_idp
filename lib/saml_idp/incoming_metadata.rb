@@ -38,9 +38,19 @@ module SamlIdp
         company: company,
         telephone_number: telephone_number,
         email_address: email_address
-      }
+      } if contact_person_document
     end
     hashable :contact_person
+
+    def requested_attributes
+      attributes = []
+
+      xpath("//md:RequestedAttribute", md: metadata_namespace).each do |node|
+        attributes << node.attribute("Name").value
+      end
+      attributes
+    end
+    hashable :requested_attributes
 
     def signing_certificate
       xpath(
