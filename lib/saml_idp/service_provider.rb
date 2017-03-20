@@ -21,6 +21,7 @@ module SamlIdp
 
     def valid_signature?(doc, require_signature = false, options = {})
       if require_signature || should_validate_signature?
+        retrieve_certificate if not self.cert
         doc.valid_signature?(fingerprint, options.merge(cert: cert))
       else
         true
@@ -34,7 +35,7 @@ module SamlIdp
 
     def refresh_metadata
       fresh = fresh_incoming_metadata
-      if valid_signature?(fresh.document)
+      if (not self.cert) or valid_signature?(fresh.document) 
         metadata_persister[identifier, fresh]
         @current_metadata = nil
         fresh
@@ -52,6 +53,12 @@ module SamlIdp
       end
     end
     private :get_current_or_build
+
+    def retrieve_certificate
+      refresh_metadata
+      self.cert = current_metadata.attributes[:signing_certificate]
+    end
+    private :retrieve_certificate
 
     def metadata_getter
       config.service_provider.persisted_metadata_getter
